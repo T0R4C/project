@@ -71,7 +71,8 @@ def scrape_and_store():
         print(f"--- Starting systematic sweep for keyword: '{keyword}' ---")
         current_year, current_offset = get_state(supabase, keyword)
         
-        pages_to_fetch = 5 
+        # Reduce load: fetch only 3 pages per keyword per run (150 papers total per keyword)
+        pages_to_fetch = 3 
         page_count = 0
         
         while page_count < pages_to_fetch:
@@ -85,13 +86,23 @@ def scrape_and_store():
                 'fields': 'title,abstract,venue,year,authors'
             }
             
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AcademicResearchBot/1.0',
+                'Accept': 'application/json'
+            }
+            
+            # Use API Key if available (bypasses most rate limits)
+            s2_api_key = os.environ.get("S2_API_KEY")
+            if s2_api_key:
+                headers['x-api-key'] = s2_api_key
+            
             # Retry logic for individual requests
             max_retries = 3
             success = False
             
             for attempt in range(max_retries):
                 try:
-                    response = requests.get(SEMANTIC_SCHOLAR_URL, params=params, timeout=20)
+                    response = requests.get(SEMANTIC_SCHOLAR_URL, params=params, headers=headers, timeout=20)
                     
                     if response.status_code == 200:
                         data_json = response.json()
