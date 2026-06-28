@@ -39,26 +39,26 @@
     </nav>
 
     <!-- Main Content -->
-    <div class="container my-5">
+    <div class="container my-5 animate-slide-up">
         <div class="row justify-content-center">
             <div class="col-lg-8 text-center mb-5">
-                <h1 class="fw-bold text-dark display-5 mb-3">Temukan Referensi Penelitianmu</h1>
+                <h1 class="fw-bold text-gradient display-5 mb-3">Temukan Referensi Penelitianmu</h1>
                 <p class="text-muted lead">Ketikkan kata kunci, topik, atau *paste* abstrak ide penelitian Anda di bawah ini. AI kami akan mencarikan artikel yang paling relevan secara semantik dari database kami.</p>
             </div>
         </div>
 
-        <div class="row justify-content-center">
+        <div class="row justify-content-center delay-100">
             <div class="col-lg-8">
                 <!-- Search Card -->
-                <div class="card border-0 shadow-lg rounded-4 overflow-hidden mb-5">
+                <div class="card magic-card mb-5">
                     <div class="card-body p-4 p-md-5">
                         <form id="searchForm">
                             <div class="mb-4">
-                                <label for="queryText" class="form-label fw-bold text-dark">Ide Penelitian / Kata Kunci</label>
-                                <textarea class="form-control bg-light border-0 p-3 shadow-sm" id="queryText" rows="4" placeholder="Contoh: Pengaruh implementasi machine learning terhadap efisiensi energi pada smart city..." required></textarea>
+                                <label for="queryText" class="form-label fw-bold text-gradient-accent">Ide Penelitian / Kata Kunci</label>
+                                <textarea class="form-control rounded-3" id="queryText" rows="4" placeholder="Contoh: Pengaruh implementasi machine learning terhadap efisiensi energi pada smart city..." required></textarea>
                             </div>
                             
-                            <button type="submit" class="btn btn-primary btn-lg w-100 rounded-pill fw-bold shadow" id="submitBtn">
+                            <button type="submit" class="btn btn-glow btn-lg w-100 rounded-pill fw-bold" id="submitBtn">
                                 <span class="d-flex align-items-center justify-content-center">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-magic me-2" viewBox="0 0 16 16">
                                       <path d="M9.5 2.672a.5.5 0 1 0 1 0V.843a.5.5 0 0 0-1 0v1.829Zm4.5.535A.5.5 0 0 0 13.293 2L12 3.293a.5.5 0 1 0 .707.707L14 2.707ZM7.293 4A.5.5 0 1 0 8 3.293L6.707 2A.5.5 0 0 0 6 2.707L7.293 4Zm-.538 4.5A.5.5 0 0 0 6 9.5v1.828a.5.5 0 0 0 1 0V9.5a.5.5 0 0 0-.5-.5Zm1.828 4.5a.5.5 0 0 0 1 0V14.5a.5.5 0 0 0-1 0v-1.828a.5.5 0 0 0-.5.5ZM13.293 14A.5.5 0 1 0 14 13.293L12.707 12a.5.5 0 0 0-.707.707L13.293 14ZM2.707 14A.5.5 0 0 0 2 13.293l1.293-1.293a.5.5 0 1 0 .707.707L2.707 14ZM2 2.707A.5.5 0 1 0 2.707 2L1.414 3.293A.5.5 0 0 0 2 3.707L2 2.707ZM14.5 9.5a.5.5 0 0 0 0-1h-1.828a.5.5 0 0 0 0 1H14.5ZM2.5 9.5a.5.5 0 0 0 0-1H.672a.5.5 0 0 0 0 1H2.5Z"/>

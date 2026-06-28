@@ -38,19 +38,28 @@
     </nav>
 
     <!-- Main Content -->
-    <div class="container my-5">
-        <!-- Header & Search -->
-        <div class="row mb-5 align-items-center">
+    <div class="container my-5 animate-slide-up">
+        <div class="row align-items-center mb-5">
             <div class="col-md-6">
-                <h2 class="fw-bold text-dark mb-1">Database Explorer</h2>
-                <p class="text-muted">Jelajahi <span id="totalCountBadge" class="badge bg-primary rounded-pill">0</span> artikel akademik yang telah dikumpulkan.</p>
+                <h2 class="fw-bold text-gradient mb-2">Database Explorer</h2>
+                <p class="text-muted">Jelajahi seluruh koleksi jurnal akademik yang telah dikumpulkan.</p>
             </div>
             <div class="col-md-6">
-                <div class="search-box position-relative shadow-sm rounded-pill overflow-hidden">
-                    <input type="text" id="searchInput" class="form-control form-control-lg border-0 ps-5" placeholder="Cari judul, topik, atau kata kunci...">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-search position-absolute text-muted" style="top: 50%; left: 20px; transform: translateY(-50%);" viewBox="0 0 16 16">
-                        <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+                <div class="search-box position-relative">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="var(--text-secondary)" class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3" viewBox="0 0 16 16">
+                      <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
                     </svg>
+                    <input type="text" id="searchInput" class="form-control rounded-pill ps-5 py-3 border-0" placeholder="Cari judul, abstrak, atau penulis...">
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Overview -->
+        <div class="row mb-4 delay-100">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center bg-transparent border border-secondary rounded-4 p-3 px-4">
+                    <span class="text-secondary fw-medium">Menampilkan: <span id="currentRange" class="text-primary fw-bold">0-0</span></span>
+                    <span class="badge badge-accent-glow rounded-pill px-3 py-2 fs-6">Total: <span id="totalPapers">0</span> Jurnal</span>
                 </div>
             </div>
         </div>
