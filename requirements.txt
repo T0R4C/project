@@ -5,6 +5,7 @@ requests>=2.31.0
 beautifulsoup4>=4.12.2
 lxml>=4.9.3
 Flask-Caching>=2.0.2
+Flask-Limiter>=3.5.0
 gunicorn>=21.2.0
 supabase>=2.3.0
 python-dotenv>=1.0.0

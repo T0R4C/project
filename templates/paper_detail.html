@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="pageTitle">Detail Artikel — Scholar AI</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/static/css/style.css" rel="stylesheet">
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark premium-nav">
+  <div class="container">
+    <a class="navbar-brand d-flex align-items-center gap-2" href="/">
+      <div class="nav-brand-logo">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="white" viewBox="0 0 16 16">
+          <path d="M5 0h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2 2 2 0 0 1-2 2H3a2 2 0 0 1-2-2h1a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1H1a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v9a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1H3a2 2 0 0 1 2-2z"/>
+        </svg>
+      </div>
+      <span class="fw-bold text-gradient-indigo" style="font-size:1.1rem;">Scholar AI</span>
+    </a>
+    <div class="collapse navbar-collapse">
+      <ul class="navbar-nav ms-auto gap-1">
+        <li class="nav-item"><a class="nav-link" href="/">Pencarian Semantik</a></li>
+        <li class="nav-item"><a class="nav-link" href="/database">Database Explorer</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container py-5">
+
+  <!-- Back -->
+  <a href="javascript:history.back()" class="btn-glass py-2 px-4 mb-5 d-inline-flex align-items-center gap-2 animate-fade-up">
+    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+      <path d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
+    </svg>
+    Kembali
+  </a>
+
+  <!-- Loading -->
+  <div id="loadingDetail" class="text-center py-5">
+    <div class="spinner-border mb-3" style="color:var(--indigo);width:2.5rem;height:2.5rem;" role="status"></div>
+    <p style="color:var(--text-2);">Memuat detail artikel…</p>
+  </div>
+
+  <!-- Error -->
+  <div id="errorDetail" class="magic-card empty-state d-none" style="border-color:rgba(244,63,94,0.2)!important;">
+    <span class="empty-icon">😕</span>
+    <h5>Artikel Tidak Ditemukan</h5>
+    <p>Artikel ini belum ada di database kami, atau link tidak valid.</p>
+    <a href="/" class="btn-primary-glow px-5 py-3 mt-3 d-inline-block" style="border-radius:12px;">Kembali ke Pencarian</a>
+  </div>
+
+  <!-- Content -->
+  <div id="paperContent" class="d-none animate-fade-up">
+    <div class="row g-4">
+
+      <!-- Main Column -->
+      <div class="col-lg-8">
+        <div class="magic-card p-4 p-lg-5">
+          <!-- Meta badges -->
+          <div class="detail-meta-row" id="detailMeta"></div>
+          <!-- Title -->
+          <h1 class="fw-bold text-gradient mb-4" id="detailTitle" style="font-size:1.6rem;line-height:1.3;"></h1>
+          <!-- Abstract label -->
+          <p class="section-label">Abstrak</p>
+          <p class="detail-abstract" id="detailAbstract"></p>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <div class="col-lg-4">
+        <!-- Authors -->
+        <div class="magic-card p-4 mb-3">
+          <p class="section-label mb-2">👤 Penulis</p>
+          <p style="color:var(--text-1);font-size:0.9rem;line-height:1.7;margin:0;" id="detailAuthors"></p>
+        </div>
+
+        <!-- Publication Info -->
+        <div class="magic-card p-4 mb-3">
+          <p class="section-label mb-3">📋 Info Publikasi</p>
+          <div class="d-flex flex-column gap-3">
+            <div>
+              <div style="color:var(--text-3);font-size:0.75rem;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">Venue / Jurnal</div>
+              <div style="color:var(--text-1);font-size:0.9rem;" id="detailVenue">—</div>
+            </div>
+            <div>
+              <div style="color:var(--text-3);font-size:0.75rem;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">Tahun</div>
+              <div class="fw-bold text-gradient-indigo" style="font-size:1.2rem;" id="detailYear">—</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="d-flex flex-column gap-2 mb-3">
+          <a id="s2Link" href="#" target="_blank" class="btn-primary-glow py-3 text-center" style="border-radius:12px;">
+            🔗 Buka di Semantic Scholar
+          </a>
+          <button onclick="copyCitationDetail()" class="btn-glass py-3" style="border-radius:12px;">
+            📋 Salin Sitasi (APA)
+          </button>
+        </div>
+
+        <!-- Citation box -->
+        <div id="citationBox" class="magic-card p-4 d-none" style="border-color:rgba(16,185,129,0.25)!important;">
+          <p class="section-label mb-2" style="color:var(--emerald);">✅ Sitasi Disalin</p>
+          <p id="citationText" style="color:var(--text-2);font-size:0.82rem;line-height:1.65;font-style:italic;margin:0;word-break:break-word;"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div id="toastContainer"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  const paperId = window.location.pathname.split('/paper/')[1];
+  let paperData = null;
+
+  async function load() {
+    try {
+      const res  = await fetch(`/api/paper/${encodeURIComponent(paperId)}`);
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error();
+
+      paperData = data.data;
+      render(paperData);
+    } catch {
+      document.getElementById('loadingDetail').classList.add('d-none');
+      document.getElementById('errorDetail').classList.remove('d-none');
+    }
+  }
+
+  function render(p) {
+    document.getElementById('pageTitle').textContent = `${p.title} — Scholar AI`;
+    document.getElementById('detailTitle').textContent = p.title || '—';
+    document.getElementById('detailAbstract').textContent = p.abstract || 'Tidak ada abstrak tersedia untuk artikel ini.';
+    document.getElementById('detailAuthors').textContent = p.authors || 'Unknown Authors';
+    document.getElementById('detailVenue').textContent = p.venue || '—';
+    document.getElementById('detailYear').textContent = p.year || '—';
+    document.getElementById('s2Link').href = `https://semanticscholar.org/paper/${p.paperId}`;
+
+    const metaEl = document.getElementById('detailMeta');
+    metaEl.innerHTML = `
+      <span class="badge-glass">${p.year || 'N/A'}</span>
+      <span class="badge-indigo">${p.venue || 'Academic Journal'}</span>`;
+
+    document.getElementById('loadingDetail').classList.add('d-none');
+    document.getElementById('paperContent').classList.remove('d-none');
+  }
+
+  window.copyCitationDetail = function () {
+    if (!paperData) return;
+    const apa = `${paperData.authors || 'Unknown'} (${paperData.year || 'n.d.'}). ${paperData.title}. ${paperData.venue || ''}.`.trim();
+    navigator.clipboard.writeText(apa).then(() => {
+      document.getElementById('citationText').textContent = apa;
+      document.getElementById('citationBox').classList.remove('d-none');
+    });
+  };
+
+  load();
+</script>
+</body>
+</html>

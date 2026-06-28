@@ -1,108 +1,272 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const searchForm = document.getElementById('searchForm');
-    const queryText = document.getElementById('queryText');
-    const submitBtn = document.getElementById('submitBtn');
-    
-    const loadingState = document.getElementById('loadingState');
-    const resultsSection = document.getElementById('resultsSection');
-    const recommendationsList = document.getElementById('recommendationsList');
-    const resultsCount = document.getElementById('resultsCount');
-    
-    const errorAlert = document.getElementById('errorAlert');
-    const errorMessage = document.getElementById('errorMessage');
+/* Scholar AI — main.js */
 
-    searchForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const text = queryText.value.trim();
-        if (!text) return;
-        
-        // Reset UI
-        errorAlert.classList.add('d-none');
-        resultsSection.classList.add('d-none');
-        loadingState.classList.remove('d-none');
-        submitBtn.disabled = true;
-        
-        try {
-            const response = await fetch('/recommend', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ text: text })
-            });
-            
-            const data = await response.json();
-            
-            if (!response.ok) {
-                throw new Error(data.error || 'Terjadi kesalahan saat memproses permintaan.');
-            }
-            
-            displayResults(data.results);
-            
-        } catch (error) {
-            errorMessage.textContent = error.message;
-            errorAlert.classList.remove('d-none');
-        } finally {
-            loadingState.classList.add('d-none');
-            submitBtn.disabled = false;
-        }
+(function () {
+  'use strict';
+
+  // ── Elements ──────────────────────────────────────────────
+  const form        = document.getElementById('searchForm');
+  const queryText   = document.getElementById('queryText');
+  const submitBtn   = document.getElementById('submitBtn');
+  const yearFrom    = document.getElementById('yearFrom');
+  const yearTo      = document.getElementById('yearTo');
+  const loadingState = document.getElementById('loadingState');
+  const loadingDetail = document.getElementById('loadingDetail');
+  const errorBox    = document.getElementById('errorBox');
+  const errorMsg    = document.getElementById('errorMsg');
+  const resultsSection = document.getElementById('resultsSection');
+  const resultGrid  = document.getElementById('resultGrid');
+  const resultsCount = document.getElementById('resultsCount');
+  const poolInfo    = document.getElementById('poolInfo');
+
+  // Keep results for export
+  let lastResults = [];
+
+  // ── Year Dropdowns ────────────────────────────────────────
+  const currentYear = new Date().getFullYear();
+  for (let y = currentYear; y >= 1990; y--) {
+    yearFrom.add(new Option(y, y));
+    yearTo.add(new Option(y, y));
+  }
+  yearTo.value = currentYear;
+
+  // ── Load Stats ────────────────────────────────────────────
+  async function loadStats() {
+    try {
+      const res  = await fetch('/api/stats');
+      const data = await res.json();
+      if (data.success) {
+        animateCounter('statTotal', data.total_papers);
+        document.getElementById('statLatest').textContent = data.latest_year || '—';
+      }
+    } catch (_) {}
+  }
+
+  function animateCounter(id, target) {
+    const el = document.getElementById(id);
+    if (!el || !target) return;
+    let current = 0;
+    const duration = 1200;
+    const step = target / (duration / 16);
+    const timer = setInterval(() => {
+      current = Math.min(current + step, target);
+      el.textContent = Math.floor(current).toLocaleString('id-ID');
+      if (current >= target) clearInterval(timer);
+    }, 16);
+  }
+
+  loadStats();
+
+  // ── Topic Chips ───────────────────────────────────────────
+  document.querySelectorAll('.chip-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      // Remove active from all
+      document.querySelectorAll('.chip-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      queryText.value = btn.dataset.q;
+      queryText.focus();
+      toast('💡 Topik diterapkan. Klik "Cari" untuk menelusuri.', 2500);
+    });
+  });
+
+  // ── Form Submit ───────────────────────────────────────────
+  if (form) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const text = queryText.value.trim();
+      if (!text || text.length < 5) {
+        toast('⚠️ Mohon masukkan kata kunci atau abstrak yang lebih panjang.', 3000);
+        return;
+      }
+      await runSearch(text);
+    });
+  }
+
+  async function runSearch(text) {
+    // UI reset
+    errorBox.classList.add('d-none');
+    resultsSection.classList.add('d-none');
+    resultGrid.innerHTML = '';
+    loadingState.classList.remove('d-none');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status"></span>Menganalisis...`;
+
+    const yf = yearFrom.value ? parseInt(yearFrom.value) : null;
+    const yt = yearTo.value   ? parseInt(yearTo.value)   : null;
+
+    const loadingMessages = [
+      'Membangun indeks BM25…',
+      'Mencocokkan n-gram frasa…',
+      'Meranking berdasarkan relevansi…',
+      'Hampir selesai…'
+    ];
+    let msgIdx = 0;
+    const msgTimer = setInterval(() => {
+      if (loadingDetail && msgIdx < loadingMessages.length) {
+        loadingDetail.textContent = loadingMessages[msgIdx++];
+      }
+    }, 1500);
+
+    try {
+      const res  = await fetch('/recommend', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text, year_from: yf, year_to: yt })
+      });
+      const data = await res.json();
+
+      if (!res.ok || !data.success) throw new Error(data.error || 'Server error.');
+
+      lastResults = data.results || [];
+      renderResults(lastResults, data.pool_size, data.cached);
+
+    } catch (err) {
+      errorMsg.textContent = err.message;
+      errorBox.classList.remove('d-none');
+    } finally {
+      clearInterval(msgTimer);
+      loadingState.classList.add('d-none');
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16" class="me-2"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.118-.101zm-5.242.856a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z"/></svg>Cari Artikel Relevan`;
+    }
+  }
+
+  // ── Render Results ────────────────────────────────────────
+  function renderResults(papers, poolSize, cached) {
+    resultGrid.innerHTML = '';
+    resultsCount.textContent = `${papers.length} Artikel`;
+    poolInfo.textContent = `Dianalisis dari ${(poolSize || 0).toLocaleString('id-ID')} jurnal${cached ? ' · ⚡ Dari cache' : ''}`;
+
+    if (papers.length === 0) {
+      resultGrid.innerHTML = `
+        <div class="col-12">
+          <div class="magic-card empty-state">
+            <span class="empty-icon">🔍</span>
+            <h5>Tidak Ada Kecocokan Relevan</h5>
+            <p>Tidak ada artikel yang melampaui ambang relevansi. Coba gunakan istilah yang lebih umum, atau perluas rentang tahun.</p>
+          </div>
+        </div>`;
+      resultsSection.classList.remove('d-none');
+      return;
+    }
+
+    papers.forEach((paper, idx) => {
+      const delay = `delay-${Math.min(idx + 1, 6)}`;
+      const score = paper.relevance_score || 0;
+      let badgeClass = 'badge-glass';
+      if (score >= 60) badgeClass = 'badge-emerald';
+      else if (score >= 35) badgeClass = 'badge-indigo';
+      else if (score >= 20) badgeClass = 'badge-amber';
+
+      // SVG ring
+      const r = 19, circ = 2 * Math.PI * r;
+      const offset = circ - (score / 100) * circ;
+      const ringColor = score >= 60 ? '#10b981' : score >= 35 ? '#818cf8' : '#f59e0b';
+
+      const col = document.createElement('div');
+      col.className = `col-md-6 animate-fade-up ${delay}`;
+      col.innerHTML = `
+        <div class="magic-card h-100" style="display:flex;flex-direction:column;">
+          <div style="padding:1.5rem 1.5rem 0.75rem;">
+            <!-- Top Row -->
+            <div class="d-flex justify-content-between align-items-start mb-3">
+              <div class="d-flex align-items-center gap-2 flex-wrap">
+                <span class="badge-glass">${paper.year || 'N/A'}</span>
+                <span class="${badgeClass}">${score}% cocok</span>
+              </div>
+              <!-- Relevance Ring -->
+              <div class="relevance-ring" title="${score}% Relevansi">
+                <svg width="48" height="48" viewBox="0 0 48 48">
+                  <circle class="ring-bg" cx="24" cy="24" r="${r}" stroke-width="4"/>
+                  <circle class="ring-fill" cx="24" cy="24" r="${r}" stroke-width="4"
+                    stroke="${ringColor}"
+                    stroke-dasharray="${circ}"
+                    stroke-dashoffset="${offset}"/>
+                </svg>
+                <span style="font-size:0.6rem;font-weight:700;color:${ringColor};">${score}%</span>
+              </div>
+            </div>
+
+            <!-- Title -->
+            <a href="/paper/${paper.paperId}" class="d-block mb-2" style="text-decoration:none;">
+              <h5 class="fw-bold text-gradient clamp-2 mb-0" style="font-size:1rem;line-height:1.45;">${paper.title}</h5>
+            </a>
+
+            <!-- Abstract -->
+            <p class="clamp-3 mb-3" style="color:var(--text-2);font-size:0.85rem;line-height:1.65;">${paper.abstract || 'Tidak ada abstrak.'}</p>
+          </div>
+
+          <!-- Divider -->
+          <hr class="divider mx-0">
+
+          <!-- Footer -->
+          <div style="padding:0.75rem 1.5rem 1.25rem;" class="mt-auto">
+            <div class="d-flex align-items-center justify-content-between gap-2">
+              <div class="overflow-hidden">
+                <p class="mb-0 clamp-2" style="font-size:0.8rem;font-weight:500;color:var(--text-1);">${paper.authors || 'Unknown Authors'}</p>
+                <p class="mb-0 clamp-1" style="font-size:0.75rem;color:var(--text-3);">${paper.venue || '—'}</p>
+              </div>
+              <div class="d-flex gap-2 flex-shrink-0">
+                <button onclick="copyCitation(${JSON.stringify(paper).replace(/'/g,"&#39;")})" class="btn-glass py-1 px-2" style="font-size:0.75rem;" title="Salin Sitasi APA">
+                  📋
+                </button>
+                <a href="/paper/${paper.paperId}" class="btn-glass py-1 px-2" style="font-size:0.75rem;" title="Lihat Detail">
+                  Detail
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>`;
+      resultGrid.appendChild(col);
     });
 
-    function displayResults(papers) {
-        recommendationsList.innerHTML = '';
-        resultsCount.textContent = `${papers.length} Artikel Ditemukan`;
-        
-        if (papers.length === 0) {
-            recommendationsList.innerHTML = `
-                <div class="alert alert-warning border-0 shadow-sm rounded-3">
-                    Tidak ada artikel di database yang relevan dengan kueri Anda. Coba kata kunci yang lebih umum.
-                </div>
-            `;
-            resultsSection.classList.remove('d-none');
-            return;
-        }
-        
-        papers.forEach(paper => {
-            // Determine badge color based on relevance score
-            let badgeClass = 'badge-glass';
-            if (paper.relevance_score > 30) badgeClass = 'badge-success-glow';
-            else if (paper.relevance_score > 15) badgeClass = 'badge-accent-glow';
-            
-            const card = document.createElement('div');
-            card.className = 'magic-card mb-4 animate-slide-up';
-            card.innerHTML = `
-                <div class="card-body p-4">
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                        <span class="badge badge-glass rounded-pill px-3 py-1 mb-2">${paper.year || 'N/A'}</span>
-                        <div class="d-flex align-items-center gap-2">
-                            <span class="badge ${badgeClass} rounded-pill px-3 py-1">Kecocokan: ${paper.relevance_score}%</span>
-                            <a href="https://semanticscholar.org/paper/${paper.paperId}" target="_blank" class="text-decoration-none" style="color: #6366f1;" title="Buka di Semantic Scholar">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-up-right" viewBox="0 0 16 16">
-                                  <path fill-rule="evenodd" d="M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5z"/>
-                                  <path fill-rule="evenodd" d="M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0v-5z"/>
-                                </svg>
-                            </a>
-                        </div>
-                    </div>
-                    <h5 class="card-title fw-bold text-gradient mb-3">${paper.title}</h5>
-                    <p class="card-text text-secondary mb-4 line-clamp-4">${paper.abstract || 'Tidak ada abstrak.'}</p>
-                    <div class="d-flex align-items-center border-top border-secondary pt-3">
-                        <div class="rounded-circle d-flex align-items-center justify-content-center me-3 flex-shrink-0" style="width: 40px; height: 40px; background: rgba(255,255,255,0.05); color: #a1a1aa;">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-person-fill" viewBox="0 0 16 16">
-                                <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H3Zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/>
-                            </svg>
-                        </div>
-                        <div class="overflow-hidden">
-                            <h6 class="mb-0 fw-semibold text-primary text-truncate" style="color:#f4f4f5!important;">${paper.authors || 'Unknown Authors'}</h6>
-                            <small class="text-secondary text-truncate d-block">${paper.venue || 'Unknown Venue'}</small>
-                        </div>
-                    </div>
-                </div>
-            `;
-            recommendationsList.appendChild(card);
-        });
-        
-        resultsSection.classList.remove('d-none');
-    }
-});
+    resultsSection.classList.remove('d-none');
+    resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  // ── Copy Citation ─────────────────────────────────────────
+  window.copyCitation = function (paper) {
+    const authors = paper.authors || 'Unknown Authors';
+    const year    = paper.year || 'n.d.';
+    const title   = paper.title || 'Untitled';
+    const venue   = paper.venue || '';
+    const apa     = `${authors} (${year}). ${title}. ${venue}.`.trim();
+    navigator.clipboard.writeText(apa).then(() => {
+      toast(`📋 Sitasi disalin: ${apa.substring(0, 60)}…`, 3500);
+    }).catch(() => toast('⚠️ Gagal menyalin sitasi.', 2500));
+  };
+
+  // ── Export CSV ────────────────────────────────────────────
+  window.exportResults = function () {
+    if (!lastResults.length) { toast('⚠️ Tidak ada hasil untuk diekspor.', 2500); return; }
+    const header = ['Rank', 'Relevansi (%)', 'Judul', 'Penulis', 'Tahun', 'Venue', 'Paper ID'];
+    const rows = lastResults.map((p, i) => [
+      i + 1,
+      p.relevance_score,
+      `"${(p.title || '').replace(/"/g, '""')}"`,
+      `"${(p.authors || '').replace(/"/g, '""')}"`,
+      p.year || '',
+      `"${(p.venue || '').replace(/"/g, '""')}"`,
+      p.paperId || ''
+    ]);
+    const csv = [header, ...rows].map(r => r.join(',')).join('\n');
+    const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url; a.download = `scholar_ai_results_${Date.now()}.csv`;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast('✅ File CSV berhasil diunduh.', 2500);
+  };
+
+  // ── Toast ─────────────────────────────────────────────────
+  window.toast = function (msg, ms = 3000) {
+    const container = document.getElementById('toastContainer');
+    if (!container) return;
+    const el = document.createElement('div');
+    el.className = 'toast-item';
+    el.textContent = msg;
+    container.appendChild(el);
+    setTimeout(() => { el.style.opacity = '0'; el.style.transition = 'opacity 0.3s'; setTimeout(() => el.remove(), 350); }, ms);
+  };
+
+})();

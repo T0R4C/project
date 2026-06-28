@@ -1,93 +1,118 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Database Explorer - Plagiarism Checker</title>
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Custom CSS -->
-    <link href="/static/css/style.css" rel="stylesheet">
-    <!-- Lottie Player -->
-    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Database Explorer — Scholar AI</title>
+  <meta name="description" content="Jelajahi seluruh koleksi jurnal akademik yang telah dikumpulkan oleh Scholar AI.">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/static/css/style.css" rel="stylesheet">
+  <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
 </head>
-<body class="bg-light">
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary premium-nav shadow-sm">
-        <div class="container">
-            <a class="navbar-brand fw-bold d-flex align-items-center" href="/">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-shield-check me-2" viewBox="0 0 16 16">
-                  <path d="M5.338 1.59a61.44 61.44 0 0 0-2.837.856.481.481 0 0 0-.328.39c-.554 4.157.726 7.19 2.253 9.188a10.725 10.725 0 0 0 2.287 2.233c.346.244.652.42.893.533.12.057.218.095.293.118a.55.55 0 0 0 .101.025.615.615 0 0 0 .1-.025c.076-.023.174-.061.294-.118.24-.113.547-.29.893-.533a10.726 10.726 0 0 0 2.287-2.233c1.527-1.997 2.807-5.031 2.253-9.188a.48.48 0 0 0-.328-.39c-.651-.213-1.75-.56-2.837-.855C9.552 1.29 8.531 1.067 8 1.067c-.53 0-1.552.223-2.662.524zM5.072.56C6.157.265 7.31 0 8 0s1.843.265 2.928.56c1.11.3 2.229.655 2.887.87a1.54 1.54 0 0 1 1.044 1.262c.596 4.477-.787 7.795-2.465 9.99a11.775 11.775 0 0 1-2.517 2.453 7.159 7.159 0 0 1-1.048.625c-.28.132-.581.24-.829.24s-.548-.108-.829-.24a7.158 7.158 0 0 1-1.048-.625 11.777 11.777 0 0 1-2.517-2.453C1.928 10.487.545 7.169 1.141 2.692A1.54 1.54 0 0 1 2.185 1.43 62.456 62.456 0 0 1 5.072.56z"/>
-                  <path d="M10.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0z"/>
-                </svg>
-                Plagiarism Checker
-            </a>
-            <div class="collapse navbar-collapse justify-content-end">
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <a class="nav-link" href="/">Cek Dokumen</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active fw-bold" href="/database">Database Explorer</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
+<body>
 
-    <!-- Main Content -->
-    <div class="container my-5 animate-slide-up">
-        <div class="row align-items-center mb-5">
-            <div class="col-md-6">
-                <h2 class="fw-bold text-gradient mb-2">Database Explorer</h2>
-                <p class="text-muted">Jelajahi seluruh koleksi jurnal akademik yang telah dikumpulkan.</p>
-            </div>
-            <div class="col-md-6">
-                <div class="search-box position-relative">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="var(--text-secondary)" class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3" viewBox="0 0 16 16">
-                      <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
-                    </svg>
-                    <input type="text" id="searchInput" class="form-control rounded-pill ps-5 py-3 border-0" placeholder="Cari judul, abstrak, atau penulis...">
-                </div>
-            </div>
-        </div>
-
-        <!-- Stats Overview -->
-        <div class="row mb-4 delay-100">
-            <div class="col-12">
-                <div class="d-flex justify-content-between align-items-center bg-transparent border border-secondary rounded-4 p-3 px-4">
-                    <span class="text-secondary fw-medium">Menampilkan: <span id="currentRange" class="text-primary fw-bold">0-0</span></span>
-                    <span class="badge badge-accent-glow rounded-pill px-3 py-2 fs-6">Total: <span id="totalPapers">0</span> Jurnal</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Lottie Animation Container (Loading / Empty States) -->
-        <div id="animationContainer" class="text-center my-5 py-5 d-none">
-            <lottie-player id="lottiePlayer" background="transparent" speed="1" style="width: 300px; height: 300px; margin: 0 auto;" loop autoplay></lottie-player>
-            <h4 id="animationMessage" class="fw-bold text-muted mt-3">Memuat Data...</h4>
-        </div>
-
-        <!-- Papers Grid -->
-        <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4 mb-5" id="papersGrid">
-            <!-- Paper cards will be injected here via JS -->
-        </div>
-
-        <!-- Pagination -->
-        <div class="d-flex justify-content-between align-items-center mt-4 d-none" id="paginationWrapper">
-            <button class="btn btn-outline-primary rounded-pill px-4" id="prevBtn" disabled>
-                <i class="bi bi-arrow-left"></i> Sebelumnya
-            </button>
-            <span class="text-muted fw-medium">Halaman <span id="currentPage">1</span></span>
-            <button class="btn btn-outline-primary rounded-pill px-4" id="nextBtn">
-                Selanjutnya <i class="bi bi-arrow-right"></i>
-            </button>
-        </div>
+<!-- ── NAVBAR ─────────────────────────────────────────────── -->
+<nav class="navbar navbar-expand-lg navbar-dark premium-nav">
+  <div class="container">
+    <a class="navbar-brand d-flex align-items-center gap-2" href="/">
+      <div class="nav-brand-logo">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="white" viewBox="0 0 16 16">
+          <path d="M5 0h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2 2 2 0 0 1-2 2H3a2 2 0 0 1-2-2h1a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1H1a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v9a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1H3a2 2 0 0 1 2-2z"/>
+        </svg>
+      </div>
+      <span class="fw-bold text-gradient-indigo" style="font-size:1.1rem;">Scholar AI</span>
+    </a>
+    <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#navMain">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navMain">
+      <ul class="navbar-nav ms-auto gap-1">
+        <li class="nav-item"><a class="nav-link" href="/">Pencarian Semantik</a></li>
+        <li class="nav-item"><a class="nav-link active" href="/database">Database Explorer</a></li>
+      </ul>
     </div>
-    
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="/static/js/database.js"></script>
+  </div>
+</nav>
+
+<div class="container py-5">
+
+  <!-- Header -->
+  <div class="row align-items-end mb-5 animate-fade-up">
+    <div class="col-md-6 mb-3 mb-md-0">
+      <p class="section-label mb-2">🗃️ Koleksi Jurnal</p>
+      <h1 class="fw-bold text-gradient mb-1" style="font-size:2rem;">Database Explorer</h1>
+      <p style="color:var(--text-2); font-size:0.9rem; margin:0;">
+        Diperbarui otomatis setiap 30 menit · Total
+        <span class="text-gradient-indigo fw-semibold" id="totalBadge">memuat…</span>
+      </p>
+    </div>
+    <div class="col-md-6">
+      <!-- Search box -->
+      <div class="search-container">
+        <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.118-.101zm-5.242.856a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z"/>
+        </svg>
+        <input type="text" id="searchInput" class="search-input" placeholder="Cari judul, penulis, atau topik…">
+      </div>
+    </div>
+  </div>
+
+  <!-- Year filter + stats bar -->
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4 animate-fade-up delay-1">
+    <div class="d-flex gap-2 align-items-center flex-wrap">
+      <select class="form-select" id="dbYearFrom" style="width:130px;font-size:0.85rem;">
+        <option value="">Tahun awal</option>
+      </select>
+      <span style="color:var(--text-3);font-size:0.85rem;">—</span>
+      <select class="form-select" id="dbYearTo" style="width:130px;font-size:0.85rem;">
+        <option value="">Tahun akhir</option>
+      </select>
+    </div>
+    <div class="d-flex align-items-center gap-3" style="color:var(--text-3);font-size:0.82rem;">
+      <span>Menampilkan <strong style="color:var(--text-1);" id="rangeText">0-0</strong></span>
+      <span>dari <strong style="color:var(--text-1);" id="totalText">0</strong> artikel</span>
+    </div>
+  </div>
+
+  <!-- State: Loading -->
+  <div id="stateLoading" class="text-center py-5">
+    <lottie-player src="https://lottie.host/a98075bc-dd9e-4340-970d-f5e9c05e1eb2/5h75xT3b0b.json"
+      background="transparent" speed="1" style="width:160px;height:160px;margin:0 auto;" loop autoplay></lottie-player>
+    <p class="text-gradient-indigo fw-semibold mt-2">Memuat jurnal…</p>
+  </div>
+
+  <!-- State: Empty -->
+  <div id="stateEmpty" class="magic-card empty-state d-none">
+    <span class="empty-icon">📭</span>
+    <h5>Tidak Ada Jurnal Ditemukan</h5>
+    <p>Coba ubah kata kunci pencarian atau filter tahun Anda.</p>
+  </div>
+
+  <!-- State: Error -->
+  <div id="stateError" class="magic-card empty-state d-none" style="border-color:rgba(244,63,94,0.2)!important;">
+    <span class="empty-icon">❌</span>
+    <h5>Gagal Memuat Data</h5>
+    <p>Periksa koneksi Anda atau coba muat ulang halaman.</p>
+  </div>
+
+  <!-- Papers Grid -->
+  <div class="row g-4 d-none" id="papersGrid"></div>
+
+  <!-- Pagination -->
+  <div id="paginationBar" class="d-none mt-5">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+      <button class="btn-glass py-2 px-4" id="prevBtn" disabled>← Sebelumnya</button>
+      <div class="d-flex align-items-center gap-2" id="pageDots"></div>
+      <button class="btn-glass py-2 px-4" id="nextBtn">Selanjutnya →</button>
+    </div>
+  </div>
+
+</div>
+
+<div id="toastContainer"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/static/js/database.js"></script>
 </body>
 </html>

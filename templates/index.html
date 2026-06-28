@@ -1,109 +1,191 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Academic Paper Recommender</title>
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Custom CSS -->
-    <link href="/static/css/style.css" rel="stylesheet">
-    <!-- Lottie Player -->
-    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scholar AI — Pencarian Semantik Jurnal Akademik</title>
+  <meta name="description" content="Temukan jurnal dan artikel akademik yang paling relevan dengan topik penelitian Anda menggunakan pencarian semantik bertenaga AI BM25.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/static/css/style.css" rel="stylesheet">
+  <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
 </head>
-<body class="bg-light">
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary premium-nav shadow-sm">
-        <div class="container">
-            <a class="navbar-brand fw-bold d-flex align-items-center" href="/">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-journal-richtext me-2" viewBox="0 0 16 16">
-                  <path d="M7.5 3.75a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0zm-.861 1.542 1.33.886 1.854-1.855a.25.25 0 0 1 .289-.047l1.888.974V8.5a.5.5 0 0 1-.5.5H5a.5.5 0 0 1-.5-.5V8s1.54-1.274 1.615-1.338a.5.5 0 0 1 .524-.07z"/>
-                  <path d="M3 0h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-1h1v1a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v1H1V2a2 2 0 0 1 2-2z"/>
-                  <path d="M3 5.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5z"/>
-                </svg>
-                Academic Recommender
-            </a>
-            <div class="collapse navbar-collapse justify-content-end">
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <a class="nav-link active fw-bold" href="/">Pencarian Semantik</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/database">Database Explorer</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
+<body>
 
-    <!-- Main Content -->
-    <div class="container my-5 animate-slide-up">
-        <div class="row justify-content-center">
-            <div class="col-lg-8 text-center mb-5">
-                <h1 class="fw-bold text-gradient display-5 mb-3">Temukan Referensi Penelitianmu</h1>
-                <p class="text-muted lead">Ketikkan kata kunci, topik, atau *paste* abstrak ide penelitian Anda di bawah ini. AI kami akan mencarikan artikel yang paling relevan secara semantik dari database kami.</p>
-            </div>
-        </div>
-
-        <div class="row justify-content-center delay-100">
-            <div class="col-lg-8">
-                <!-- Search Card -->
-                <div class="card magic-card mb-5">
-                    <div class="card-body p-4 p-md-5">
-                        <form id="searchForm">
-                            <div class="mb-4">
-                                <label for="queryText" class="form-label fw-bold text-gradient-accent">Ide Penelitian / Kata Kunci</label>
-                                <textarea class="form-control rounded-3" id="queryText" rows="4" placeholder="Contoh: Pengaruh implementasi machine learning terhadap efisiensi energi pada smart city..." required></textarea>
-                            </div>
-                            
-                            <button type="submit" class="btn btn-glow btn-lg w-100 rounded-pill fw-bold" id="submitBtn">
-                                <span class="d-flex align-items-center justify-content-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-magic me-2" viewBox="0 0 16 16">
-                                      <path d="M9.5 2.672a.5.5 0 1 0 1 0V.843a.5.5 0 0 0-1 0v1.829Zm4.5.535A.5.5 0 0 0 13.293 2L12 3.293a.5.5 0 1 0 .707.707L14 2.707ZM7.293 4A.5.5 0 1 0 8 3.293L6.707 2A.5.5 0 0 0 6 2.707L7.293 4Zm-.538 4.5A.5.5 0 0 0 6 9.5v1.828a.5.5 0 0 0 1 0V9.5a.5.5 0 0 0-.5-.5Zm1.828 4.5a.5.5 0 0 0 1 0V14.5a.5.5 0 0 0-1 0v-1.828a.5.5 0 0 0-.5.5ZM13.293 14A.5.5 0 1 0 14 13.293L12.707 12a.5.5 0 0 0-.707.707L13.293 14ZM2.707 14A.5.5 0 0 0 2 13.293l1.293-1.293a.5.5 0 1 0 .707.707L2.707 14ZM2 2.707A.5.5 0 1 0 2.707 2L1.414 3.293A.5.5 0 0 0 2 3.707L2 2.707ZM14.5 9.5a.5.5 0 0 0 0-1h-1.828a.5.5 0 0 0 0 1H14.5ZM2.5 9.5a.5.5 0 0 0 0-1H.672a.5.5 0 0 0 0 1H2.5Z"/>
-                                      <path d="M5.933.87a2.89 2.89 0 0 1 4.134 0l.622.638.89-.011a2.89 2.89 0 0 1 2.924 2.583l.01.89.638.622a2.89 2.89 0 0 1 0 4.134l-.638.622-.01.89a2.89 2.89 0 0 1-2.924 2.583l-.89-.01-.622.638a2.89 2.89 0 0 1-4.134 0l-.622-.638-.89.011a2.89 2.89 0 0 1-2.924-2.583l-.01-.89-.638-.622a2.89 2.89 0 0 1 0-4.134l.638-.622.01-.89A2.89 2.89 0 0 1 5.31 3.5l.89.01.622-.638ZM11.133 2.14a1.89 1.89 0 0 0-2.704 0l-.92.944-1.32-.016a1.89 1.89 0 0 0-1.911 1.69l-.016 1.32-.944.92a1.89 1.89 0 0 0 0 2.704l.944.92.016 1.32a1.89 1.89 0 0 0 1.911 1.69l1.32-.016.92.944a1.89 1.89 0 0 0 2.704 0l.92-.944 1.32.016a1.89 1.89 0 0 0 1.911-1.69l.016-1.32.944-.92a1.89 1.89 0 0 0 0-2.704l-.944-.92-.016-1.32a1.89 1.89 0 0 0-1.911-1.69l-1.32.016-.92-.944Z"/>
-                                      <path d="M9.57 6.035a1.5 1.5 0 1 1-2.122-2.122 1.5 1.5 0 0 1 2.122 2.122Z"/>
-                                    </svg>
-                                    Cari Artikel Relevan
-                                </span>
-                            </button>
-                        </form>
-                    </div>
-                </div>
-
-                <!-- Loading State -->
-                <div id="loadingState" class="text-center d-none my-5">
-                    <lottie-player src="https://lottie.host/a98075bc-dd9e-4340-970d-f5e9c05e1eb2/5h75xT3b0b.json" background="transparent" speed="1" style="width: 250px; height: 250px; margin: 0 auto;" loop autoplay></lottie-player>
-                    <h5 class="fw-bold text-primary mt-3">AI Sedang Mencari Kecocokan...</h5>
-                    <p class="text-muted">Menganalisis semantik kueri Anda dengan ribuan abstrak di database.</p>
-                </div>
-
-                <!-- Error Alert -->
-                <div id="errorAlert" class="alert alert-danger d-none d-flex align-items-center rounded-3 shadow-sm" role="alert">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-exclamation-triangle-fill flex-shrink-0 me-3" viewBox="0 0 16 16">
-                        <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
-                    </svg>
-                    <div id="errorMessage">An error occurred.</div>
-                </div>
-
-                <!-- Results Section -->
-                <div id="resultsSection" class="d-none">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h4 class="fw-bold text-dark mb-0">Rekomendasi Teratas</h4>
-                        <span class="badge bg-success rounded-pill px-3 py-2" id="resultsCount">0 Ditemukan</span>
-                    </div>
-                    
-                    <div id="recommendationsList" class="d-flex flex-column gap-3">
-                        <!-- Cards injected by JS -->
-                    </div>
-                </div>
-
-            </div>
-        </div>
+<!-- ── NAVBAR ───────────────────────────────────────────────── -->
+<nav class="navbar navbar-expand-lg navbar-dark premium-nav">
+  <div class="container">
+    <a class="navbar-brand d-flex align-items-center gap-2" href="/" style="text-decoration:none;">
+      <div class="nav-brand-logo">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="white" viewBox="0 0 16 16">
+          <path d="M5 0h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2 2 2 0 0 1-2 2H3a2 2 0 0 1-2-2h1a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1H1a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v9a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1H3a2 2 0 0 1 2-2z"/>
+          <path d="M1 6v-.5a.5.5 0 0 1 1 0V6h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1H1zm0 3v-.5a.5.5 0 0 1 1 0V9h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1H1zm0 2.5v.5H.5a.5.5 0 0 0 0 1h2a.5.5 0 0 0 0-1H2v-.5a.5.5 0 0 0-1 0z"/>
+        </svg>
+      </div>
+      <span class="fw-bold text-gradient-indigo" style="font-size:1.1rem; letter-spacing:-0.01em;">Scholar AI</span>
+    </a>
+    <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#navMain">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navMain">
+      <ul class="navbar-nav ms-auto gap-1">
+        <li class="nav-item"><a class="nav-link active" href="/">Pencarian Semantik</a></li>
+        <li class="nav-item"><a class="nav-link" href="/database">Database Explorer</a></li>
+      </ul>
     </div>
-    
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="/static/js/main.js"></script>
+  </div>
+</nav>
+
+<!-- ── HERO ─────────────────────────────────────────────────── -->
+<div class="container py-5">
+
+  <!-- Eyebrow -->
+  <div class="text-center mb-4 animate-fade-up">
+    <span class="badge-glass px-3 py-2 rounded-pill" style="font-size:0.78rem;">
+      <span class="pulse-dot me-2"></span>BM25 + Jaccard AI · Database Diperbarui Setiap 30 Menit
+    </span>
+  </div>
+
+  <!-- Headline -->
+  <div class="text-center mb-5 animate-fade-up delay-1">
+    <h1 class="fw-bold mb-3" style="font-size:clamp(2rem,4vw,3rem); line-height:1.15; letter-spacing:-0.03em;">
+      <span class="text-gradient">Cari Referensi Penelitian</span><br>
+      <span class="text-gradient-indigo">Paling Relevan dalam Detik</span>
+    </h1>
+    <p style="color:var(--text-2); font-size:1.05rem; max-width:540px; margin:0 auto;">
+      Tempel abstrak, kata kunci, atau ide penelitian Anda. AI kami akan menemukan jurnal terbaik dari database yang terus berkembang.
+    </p>
+  </div>
+
+  <!-- ── STATS ROW ─────────────────────────────────────────── -->
+  <div class="row g-3 justify-content-center mb-5 animate-fade-up delay-2" id="statsRow">
+    <div class="col-6 col-md-3">
+      <div class="magic-card stat-card">
+        <span class="stat-icon">📚</span>
+        <span class="stat-value text-gradient" id="statTotal">—</span>
+        <span class="stat-label">Artikel Tersimpan</span>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="magic-card stat-card">
+        <span class="stat-icon">🗓️</span>
+        <span class="stat-value text-gradient" id="statLatest">—</span>
+        <span class="stat-label">Tahun Terbaru</span>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="magic-card stat-card">
+        <span class="stat-icon">🌐</span>
+        <span class="stat-value text-gradient">35+</span>
+        <span class="stat-label">Bidang Ilmu</span>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="magic-card stat-card">
+        <span class="stat-icon">⚡</span>
+        <span class="stat-value text-gradient-emerald">BM25</span>
+        <span class="stat-label">Algoritma AI</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SEARCH CARD ──────────────────────────────────────── -->
+  <div class="row justify-content-center animate-fade-up delay-3">
+    <div class="col-lg-8">
+      <div class="magic-card p-4 p-lg-5 mb-4" id="searchCard">
+        <form id="searchForm">
+          <div class="mb-4">
+            <label class="form-label">💡 Abstrak / Kata Kunci / Ide Penelitian</label>
+            <textarea class="form-control" id="queryText" rows="4"
+              placeholder="Contoh: Pengaruh deep learning terhadap akurasi deteksi dini kanker paru-paru berbasis citra CT-Scan..."></textarea>
+          </div>
+
+          <!-- Filters -->
+          <div class="row g-3 mb-4">
+            <div class="col-sm-6">
+              <label class="form-label">Tahun Dari</label>
+              <select class="form-select" id="yearFrom"><option value="">Semua Tahun</option></select>
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label">Tahun Sampai</label>
+              <select class="form-select" id="yearTo"><option value="">Semua Tahun</option></select>
+            </div>
+          </div>
+
+          <!-- Topic Chips -->
+          <div class="mb-4">
+            <div class="section-label">🔖 Topik Populer</div>
+            <div class="d-flex flex-wrap gap-2" id="topicChips">
+              <button type="button" class="chip-btn" data-q="machine learning classification prediction model">🤖 Machine Learning</button>
+              <button type="button" class="chip-btn" data-q="deep learning neural network image recognition">🧠 Deep Learning</button>
+              <button type="button" class="chip-btn" data-q="natural language processing NLP text classification sentiment">💬 NLP</button>
+              <button type="button" class="chip-btn" data-q="internet of things IoT sensor smart city">📡 Internet of Things</button>
+              <button type="button" class="chip-btn" data-q="blockchain decentralized security distributed ledger">🔗 Blockchain</button>
+              <button type="button" class="chip-btn" data-q="kesehatan masyarakat epidemiologi penyakit">🏥 Kesehatan</button>
+              <button type="button" class="chip-btn" data-q="computer vision image detection object recognition">👁️ Computer Vision</button>
+              <button type="button" class="chip-btn" data-q="sistem informasi manajemen database enterprise">🗄️ Sistem Informasi</button>
+              <button type="button" class="chip-btn" data-q="pendidikan e-learning pembelajaran digital">📖 Pendidikan</button>
+              <button type="button" class="chip-btn" data-q="fintech financial technology payment digital banking">💳 Fintech</button>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-primary-glow w-100 py-3" id="submitBtn" style="font-size:1rem; border-radius:12px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.118-.101zm-5.242.856a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z"/>
+            </svg>
+            Cari Artikel Relevan
+          </button>
+        </form>
+      </div>
+
+      <!-- Loading Lottie -->
+      <div id="loadingState" class="text-center py-4 d-none">
+        <lottie-player src="https://lottie.host/a98075bc-dd9e-4340-970d-f5e9c05e1eb2/5h75xT3b0b.json"
+          background="transparent" speed="1" style="width:180px;height:180px;margin:0 auto;" loop autoplay></lottie-player>
+        <p class="text-gradient-indigo fw-semibold mt-2 mb-1">Menganalisis Semantik...</p>
+        <p style="color:var(--text-3); font-size:0.85rem;" id="loadingDetail">Mencocokkan dengan ribuan abstrak jurnal</p>
+      </div>
+
+      <!-- Error -->
+      <div id="errorBox" class="magic-card p-4 d-none mb-4" style="border-color:rgba(244,63,94,0.25)!important;">
+        <div class="d-flex align-items-start gap-3">
+          <span style="font-size:1.4rem;flex-shrink:0;">⚠️</span>
+          <div>
+            <p class="fw-semibold text-gradient mb-1">Terjadi Kesalahan</p>
+            <p style="color:var(--text-2); font-size:0.875rem; margin:0;" id="errorMsg"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── RESULTS ───────────────────────────────────────────── -->
+  <div id="resultsSection" class="d-none mt-2">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+      <div>
+        <h2 class="fw-bold text-gradient mb-1" style="font-size:1.35rem;">Rekomendasi Teratas</h2>
+        <p style="color:var(--text-3); font-size:0.82rem; margin:0;" id="poolInfo"></p>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <span class="badge-emerald" id="resultsCount">0 Artikel</span>
+        <button onclick="exportResults()" class="btn-glass py-2 px-3" style="font-size:0.8rem;">
+          ⬇️ Export CSV
+        </button>
+      </div>
+    </div>
+
+    <!-- Cards Grid -->
+    <div class="row g-4" id="resultGrid"></div>
+  </div>
+
+</div>
+
+<!-- ── TOAST CONTAINER ──────────────────────────────────────── -->
+<div id="toastContainer"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/static/js/main.js"></script>
 </body>
 </html>
