@@ -16,15 +16,25 @@ def scrape_and_store():
         return
         
     supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+    import random
     
     # List of keywords to loop through (can be expanded)
-    keywords = ["machine learning", "pendidikan", "sistem informasi", "kesehatan masyarakat", "artificial intelligence", "database"]
+    keywords = ["machine learning", "pendidikan", "sistem informasi", "kesehatan masyarakat", "artificial intelligence", "database", "data mining", "jaringan komputer"]
     
-    for keyword in keywords:
+    # Randomly shuffle and pick a few keywords each run to avoid hitting the same things
+    random.shuffle(keywords)
+    selected_keywords = keywords[:3] # Pick 3 random keywords per run
+    
+    for keyword in selected_keywords:
         print(f"Scraping for keyword: {keyword}")
+        
+        # Semantic Scholar allows up to 10,000 for offset
+        random_offset = random.randint(0, 9000)
+        
         params = {
             'query': keyword,
             'limit': 50,  # Fetch 50 at a time
+            'offset': random_offset, # Random page
             'fields': 'title,abstract,venue,year,authors'
         }
         
