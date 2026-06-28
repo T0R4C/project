@@ -1,14 +1,16 @@
 document.addEventListener('DOMContentLoaded', () => {
     const searchInput = document.getElementById('searchInput');
     const papersGrid = document.getElementById('papersGrid');
-    const loadingState = document.getElementById('loadingState');
-    const errorState = document.getElementById('errorState');
-    const emptyState = document.getElementById('emptyState');
+    const animationContainer = document.getElementById('animationContainer');
+    const lottiePlayer = document.getElementById('lottiePlayer');
+    const animationMessage = document.getElementById('animationMessage');
+    
     const currentRange = document.getElementById('currentRange');
     const totalPapers = document.getElementById('totalPapers');
     const paginationWrapper = document.getElementById('paginationWrapper');
     const prevBtn = document.getElementById('prevBtn');
     const nextBtn = document.getElementById('nextBtn');
+    const currentPageSpan = document.getElementById('currentPage');
     
     // Also update the header badge if it exists
     const totalCountBadge = document.getElementById('totalCountBadge');
@@ -50,13 +52,28 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    async function fetchData() {
-        // Reset UI
+    function showAnimation(type) {
         papersGrid.innerHTML = '';
-        errorState.classList.add('d-none');
-        emptyState.classList.add('d-none');
         paginationWrapper.classList.add('d-none');
-        loadingState.classList.remove('d-none');
+        animationContainer.classList.remove('d-none');
+        
+        if (type === 'loading') {
+            lottiePlayer.load('https://lottie.host/a98075bc-dd9e-4340-970d-f5e9c05e1eb2/5h75xT3b0b.json');
+            animationMessage.textContent = 'Memuat Jurnal...';
+            animationMessage.className = 'fw-bold text-gradient-accent mt-3';
+        } else if (type === 'empty') {
+            lottiePlayer.load('https://lottie.host/9e4d0b43-22cf-4b10-8b65-6901cd991e23/C9JqP4c8aR.json');
+            animationMessage.textContent = 'Jurnal Tidak Ditemukan';
+            animationMessage.className = 'fw-bold text-muted mt-3';
+        } else if (type === 'error') {
+            lottiePlayer.load('https://lottie.host/9e4d0b43-22cf-4b10-8b65-6901cd991e23/C9JqP4c8aR.json'); // Fallback to empty for now
+            animationMessage.textContent = 'Gagal memuat data dari server';
+            animationMessage.className = 'fw-bold text-danger mt-3';
+        }
+    }
+
+    async function fetchData() {
+        showAnimation('loading');
         
         try {
             const url = `/api/papers?page=${currentPage}&limit=${currentLimit}&search=${encodeURIComponent(currentQuery)}`;
@@ -72,22 +89,19 @@ document.addEventListener('DOMContentLoaded', () => {
             if (totalCountBadge) totalCountBadge.textContent = totalResults.toLocaleString();
             
             if (totalResults === 0) {
-                loadingState.classList.add('d-none');
-                emptyState.classList.remove('d-none');
+                showAnimation('empty');
                 currentRange.textContent = '0-0';
                 return;
             }
 
+            animationContainer.classList.add('d-none');
             renderPapers(data.data);
             updatePagination();
-            
-            loadingState.classList.add('d-none');
             paginationWrapper.classList.remove('d-none');
             
         } catch (error) {
             console.error('Fetch error:', error);
-            loadingState.classList.add('d-none');
-            errorState.classList.remove('d-none');
+            showAnimation('error');
             currentRange.textContent = '0-0';
         }
     }
@@ -138,6 +152,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const end = Math.min(currentPage * currentLimit, totalResults);
         
         currentRange.textContent = `${start}-${end}`;
+        if (currentPageSpan) currentPageSpan.textContent = currentPage;
         
         prevBtn.disabled = currentPage === 1;
         nextBtn.disabled = end >= totalResults;
