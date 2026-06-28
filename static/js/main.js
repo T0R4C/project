@@ -75,7 +75,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="card-body p-4">
                     <div class="d-flex justify-content-between align-items-start mb-2">
                         <span class="badge badge-glass rounded-pill px-3 py-1 mb-2">${paper.year || 'N/A'}</span>
-                        <span class="badge ${badgeClass} rounded-pill px-3 py-1">Kecocokan: ${paper.relevance_score}%</span>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge ${badgeClass} rounded-pill px-3 py-1">Kecocokan: ${paper.relevance_score}%</span>
+                            <a href="https://semanticscholar.org/paper/${paper.paperId}" target="_blank" class="text-decoration-none" style="color: #6366f1;" title="Buka di Semantic Scholar">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-up-right" viewBox="0 0 16 16">
+                                  <path fill-rule="evenodd" d="M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5z"/>
+                                  <path fill-rule="evenodd" d="M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0v-5z"/>
+                                </svg>
+                            </a>
+                        </div>
                     </div>
                     <h5 class="card-title fw-bold text-gradient mb-3">${paper.title}</h5>
                     <p class="card-text text-secondary mb-4 line-clamp-4">${paper.abstract || 'Tidak ada abstrak.'}</p>
