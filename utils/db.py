@@ -96,3 +96,17 @@ def get_all_papers(supabase, page=1, limit=20, search_query=""):
     except Exception as e:
         print(f"Error fetching papers: {e}")
         return {"data": [], "total": 0}
+
+def fetch_pool_for_semantic_search(supabase, limit=500):
+    """
+    Fetch a pool of recent papers from Supabase to be scored against the user's query.
+    For MVP, we fetch top N most recent papers. In a massive DB, we'd use pgvector.
+    """
+    if not supabase:
+        return []
+    try:
+        response = supabase.table('papers').select('paper_id, title, abstract, venue, year, authors').order('year', desc=True).limit(limit).execute()
+        return response.data
+    except Exception as e:
+        print(f"Error fetching pool: {e}")
+        return []

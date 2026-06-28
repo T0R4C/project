@@ -1,35 +1,52 @@
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
+import numpy as np
 
-def compute_similarity(text1, text2):
-    """Compute cosine similarity between two texts"""
-    if not text1 or not text2:
-        return 0.0
+def semantic_search(user_text, papers_pool, top_k=10):
+    """
+    Rank papers_pool based on cosine similarity of their (Title + Abstract) 
+    against the user's input text (Semantic Search).
+    """
+    if not user_text or not papers_pool:
+        return []
+        
+    # Prepare documents
+    documents = [user_text]
+    for paper in papers_pool:
+        title = paper.get('title') or ''
+        abstract = paper.get('abstract') or ''
+        documents.append(f"{title} {abstract}")
+        
     try:
-        vectorizer = TfidfVectorizer().fit_transform([text1, text2])
-        vectors = vectorizer.toarray()
-        return cosine_similarity([vectors[0]], [vectors[1]])[0][0]
-    except Exception:
-        # In case of empty vocabulary or other tfidf errors
-        return 0.0
-
-def find_best_match(chunk, source_texts):
-    """Find highest similarity score against list of source texts"""
-    if not source_texts:
-        return 0.0, None
-    
-    scores = []
-    for source in source_texts:
-        # Combine title and abstract if available to form the source text
-        title = source.get('title', '')
-        abstract = source.get('abstract', '') or ''
-        combined_text = f"{title} {abstract}"
+        vectorizer = TfidfVectorizer(stop_words='english')
+        tfidf_matrix = vectorizer.fit_transform(documents)
         
-        score = compute_similarity(chunk, combined_text)
-        scores.append((score, source))
-    
-    if not scores:
-        return 0.0, None
+        # Calculate cosine similarity between the user_text (index 0) and all papers
+        cosine_similarities = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[1:]).flatten()
         
-    best_score, best_source = max(scores, key=lambda x: x[0])
-    return best_score, best_source
+        # Sort indices by score descending
+        related_indices = cosine_similarities.argsort()[::-1]
+        
+        results = []
+        for idx in related_indices:
+            score = cosine_similarities[idx]
+            if score > 0.05: # Threshold to filter out complete noise
+                paper = papers_pool[idx]
+                results.append({
+                    'paperId': paper.get('paper_id'),
+                    'title': paper.get('title'),
+                    'abstract': paper.get('abstract'),
+                    'venue': paper.get('venue'),
+                    'year': paper.get('year'),
+                    'authors': paper.get('authors'),
+                    'relevance_score': round(float(score) * 100, 1) # Convert to percentage
+                })
+                
+                if len(results) >= top_k:
+                    break
+                    
+        return results
+        
+    except Exception as e:
+        print(f"Semantic search error: {e}")
+        return []

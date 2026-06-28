@@ -1,180 +1,101 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const uploadForm = document.getElementById('uploadForm');
-    const fileInput = document.getElementById('pdfFile');
-    const fileNameDisplay = document.getElementById('fileNameDisplay');
-    const dropArea = document.getElementById('dropArea');
+    const searchForm = document.getElementById('searchForm');
+    const queryText = document.getElementById('queryText');
     const submitBtn = document.getElementById('submitBtn');
-    const loadingIndicator = document.getElementById('loadingIndicator');
-    const resultsArea = document.getElementById('resultsArea');
-    const errorMessage = document.getElementById('errorMessage');
-    const reportContent = document.getElementById('reportContent');
-    const sourcesList = document.getElementById('sourcesList');
     
-    // File input change handler
-    fileInput.addEventListener('change', (e) => {
-        if (e.target.files.length > 0) {
-            const file = e.target.files[0];
-            fileNameDisplay.innerHTML = `<span class="fw-bold text-primary">${file.name}</span> (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
-        } else {
-            fileNameDisplay.textContent = 'Maksimal ukuran file: 10MB';
-        }
-    });
+    const loadingState = document.getElementById('loadingState');
+    const resultsSection = document.getElementById('resultsSection');
+    const recommendationsList = document.getElementById('recommendationsList');
+    const resultsCount = document.getElementById('resultsCount');
+    
+    const errorAlert = document.getElementById('errorAlert');
+    const errorMessage = document.getElementById('errorMessage');
 
-    // Drag and drop events
-    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-        dropArea.addEventListener(eventName, preventDefaults, false);
-    });
-
-    function preventDefaults (e) {
-        e.preventDefault();
-        e.stopPropagation();
-    }
-
-    ['dragenter', 'dragover'].forEach(eventName => {
-        dropArea.addEventListener(eventName, () => dropArea.classList.add('dragover'), false);
-    });
-
-    ['dragleave', 'drop'].forEach(eventName => {
-        dropArea.addEventListener(eventName, () => dropArea.classList.remove('dragover'), false);
-    });
-
-    dropArea.addEventListener('drop', (e) => {
-        let dt = e.dataTransfer;
-        let files = dt.files;
-        if(files.length > 0) {
-            fileInput.files = files;
-            const event = new Event('change');
-            fileInput.dispatchEvent(event);
-        }
-    });
-
-    // Form Submit
-    uploadForm.addEventListener('submit', async (e) => {
+    searchForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         
-        if (!fileInput.files[0]) {
-            showError('Silakan pilih file PDF terlebih dahulu.');
-            return;
-        }
-
-        // UI transitions
-        uploadForm.classList.add('d-none');
-        resultsArea.classList.add('d-none');
-        errorMessage.classList.add('d-none');
-        loadingIndicator.classList.remove('d-none');
-
-        const formData = new FormData();
-        formData.append('pdfFile', fileInput.files[0]);
-        formData.append('excludeRefs', document.getElementById('excludeRefs').checked);
-
+        const text = queryText.value.trim();
+        if (!text) return;
+        
+        // Reset UI
+        errorAlert.classList.add('d-none');
+        resultsSection.classList.add('d-none');
+        loadingState.classList.remove('d-none');
+        submitBtn.disabled = true;
+        
         try {
-            const response = await fetch('/check', {
+            const response = await fetch('/recommend', {
                 method: 'POST',
-                body: formData
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ text: text })
             });
-
+            
             const data = await response.json();
-
+            
             if (!response.ok) {
-                throw new Error(data.error || 'Terjadi kesalahan saat memproses dokumen.');
+                throw new Error(data.error || 'Terjadi kesalahan saat memproses permintaan.');
             }
-
-            displayResults(data);
-
+            
+            displayResults(data.results);
+            
         } catch (error) {
-            showError(error.message);
+            errorMessage.textContent = error.message;
+            errorAlert.classList.remove('d-none');
         } finally {
-            loadingIndicator.classList.add('d-none');
+            loadingState.classList.add('d-none');
+            submitBtn.disabled = false;
         }
     });
 
-    function displayResults(data) {
-        // Hide form, show results
-        resultsArea.classList.remove('d-none');
-        reportContent.classList.remove('d-none');
-        uploadForm.closest('.card').classList.add('d-none'); // Hide the whole upload card for a clean view
-
-        // Populate Score
-        const score = data.similarity_percentage;
-        const scoreEl = document.getElementById('similarityScore');
-        const progressBar = document.getElementById('scoreProgressBar');
-        const scoreMessage = document.getElementById('scoreMessage');
-
-        scoreEl.textContent = `${score.toFixed(1)}%`;
-        progressBar.style.width = `${score}%`;
-
-        // Color coding based on score
-        if (score < 20) {
-            scoreEl.style.color = 'var(--success-color)';
-            progressBar.className = 'progress-bar bg-success';
-            scoreMessage.textContent = 'Dokumen tampaknya orisinal. Kemiripan rendah.';
-        } else if (score < 40) {
-            scoreEl.style.color = 'var(--warning-color)';
-            progressBar.className = 'progress-bar bg-warning';
-            scoreMessage.textContent = 'Ditemukan kemiripan sedang. Disarankan untuk meninjau sumber.';
-        } else {
-            scoreEl.style.color = 'var(--danger-color)';
-            progressBar.className = 'progress-bar bg-danger';
-            scoreMessage.textContent = 'Kemiripan tinggi terdeteksi! Potensi indikasi plagiarisme besar.';
-        }
-
-        // Stats
-        document.getElementById('chunksProcessed').textContent = data.processed_chunks;
-        document.getElementById('highSimilarityChunks').textContent = data.high_similarity_chunks;
-
-        // Populate Sources
-        sourcesList.innerHTML = '';
-        if (data.matched_sources && data.matched_sources.length > 0) {
-            data.matched_sources.forEach(src => {
-                const srcHtml = `
-                    <div class="source-card p-4">
-                        <div class="d-flex justify-content-between align-items-start mb-2">
-                            <h6 class="fw-bold mb-0 lh-base text-dark">${src.title}</h6>
-                            <span class="source-badge ${getBadgeClass(src.similarity * 100)} ms-3 flex-shrink-0">
-                                ${(src.similarity * 100).toFixed(1)}% Cocok
-                            </span>
-                        </div>
-                        <div class="text-muted small mb-2">
-                            <i class="bi bi-person me-1"></i> ${src.authors || 'Unknown Authors'}
-                        </div>
-                        <div class="text-muted small d-flex flex-wrap gap-3">
-                            <span><strong>Jurnal/Venue:</strong> ${src.venue || 'N/A'}</span>
-                            <span><strong>Tahun:</strong> ${src.year || 'N/A'}</span>
-                        </div>
-                    </div>
-                `;
-                sourcesList.innerHTML += srcHtml;
-            });
-        } else {
-            sourcesList.innerHTML = `
-                <div class="alert alert-light border text-center p-4">
-                    <p class="mb-0 text-muted">Tidak ditemukan kecocokan signifikan dengan sumber akademik yang terindeks.</p>
+    function displayResults(papers) {
+        recommendationsList.innerHTML = '';
+        resultsCount.textContent = `${papers.length} Artikel Ditemukan`;
+        
+        if (papers.length === 0) {
+            recommendationsList.innerHTML = `
+                <div class="alert alert-warning border-0 shadow-sm rounded-3">
+                    Tidak ada artikel di database yang relevan dengan kueri Anda. Coba kata kunci yang lebih umum.
                 </div>
             `;
+            resultsSection.classList.remove('d-none');
+            return;
         }
-
-        // Create a 'Check another file' button at the bottom
-        const checkAnotherDiv = document.createElement('div');
-        checkAnotherDiv.className = 'text-center mt-5';
-        checkAnotherDiv.innerHTML = `
-            <button class="btn btn-outline-primary rounded-pill px-4" onclick="location.reload()">
-                Periksa Dokumen Lain
-            </button>
-        `;
-        sourcesList.appendChild(checkAnotherDiv);
-    }
-
-    function getBadgeClass(score) {
-        if (score > 60) return 'bg-danger text-white';
-        if (score > 30) return 'bg-warning text-dark';
-        return 'bg-info text-dark';
-    }
-
-    function showError(message) {
-        uploadForm.classList.remove('d-none'); // Show form again so user can retry
-        resultsArea.classList.remove('d-none');
-        errorMessage.classList.remove('d-none');
-        errorMessage.textContent = message;
-        reportContent.classList.add('d-none');
+        
+        papers.forEach(paper => {
+            // Determine badge color based on relevance score
+            let badgeColor = 'bg-secondary';
+            if (paper.relevance_score > 30) badgeColor = 'bg-success';
+            else if (paper.relevance_score > 15) badgeColor = 'bg-primary';
+            else if (paper.relevance_score > 5) badgeColor = 'bg-info text-dark';
+            
+            const card = document.createElement('div');
+            card.className = 'card border-0 shadow-sm rounded-4 overflow-hidden paper-card bg-white';
+            card.innerHTML = `
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <span class="badge bg-light text-primary border border-primary-subtle rounded-pill px-3 py-1 mb-2">${paper.year || 'N/A'}</span>
+                        <span class="badge ${badgeColor} rounded-pill px-3 py-1">Kecocokan: ${paper.relevance_score}%</span>
+                    </div>
+                    <h5 class="card-title fw-bold text-dark mb-3">${paper.title}</h5>
+                    <p class="card-text text-muted mb-4">${paper.abstract || 'Tidak ada abstrak.'}</p>
+                    <div class="d-flex align-items-center border-top pt-3">
+                        <div class="bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center me-3 flex-shrink-0" style="width: 40px; height: 40px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-people" viewBox="0 0 16 16">
+                              <path d="M15 14s1 0 1-1-1-4-5-4-5 3-5 4 1 1 1 1h8Zm-7.978-1A.261.261 0 0 1 7 12.996c.001-.264.167-1.03.76-1.72C8.312 10.629 9.282 10 11 10c1.717 0 2.687.63 3.24 1.276.593.69.758 1.457.76 1.72l-.008.002a.274.274 0 0 1-.014.002H7.022ZM11 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm3-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0ZM6.936 9.28a5.88 5.88 0 0 0-1.23-.247A7.35 7.35 0 0 0 5 9c-4 0-5 3-5 4 0 .667.333 1 1 1h4.216A2.238 2.238 0 0 1 5 13c0-1.01.377-2.042 1.09-2.904.243-.294.526-.569.846-.816ZM4.92 10A5.493 5.493 0 0 0 4 13H1c0-.26.164-1.03.76-1.724.545-.636 1.492-1.256 3.16-1.275ZM1.5 5.5a3 3 0 1 1 6 0 3 3 0 0 1-6 0Zm3-2a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z"/>
+                            </svg>
+                        </div>
+                        <div class="overflow-hidden">
+                            <h6 class="mb-0 fw-semibold text-dark text-truncate">${paper.authors || 'Unknown Authors'}</h6>
+                            <small class="text-muted text-truncate d-block">${paper.venue || 'Unknown Venue'}</small>
+                        </div>
+                    </div>
+                </div>
+            `;
+            recommendationsList.appendChild(card);
+        });
+        
+        resultsSection.classList.remove('d-none');
     }
 });

@@ -1,14 +1,9 @@
 import os
-import hashlib
 from flask import Flask, request, jsonify, render_template
 from flask_caching import Cache
 
-from utils.pdf_extractor import extract_text_from_pdf
-from utils.preprocessor import remove_bibliography, clean_text
-from utils.chunker import sentence_tokenize, create_chunks
-from utils.api_client import search_academic_sources
-from utils.similarity import find_best_match
-from utils.report_generator import aggregate_similarities
+from utils.db import get_db_client, get_all_papers, fetch_pool_for_semantic_search
+from utils.similarity import semantic_search
 
 app = Flask(__name__)
 # Configure cache (SimpleCache for MVP)
@@ -16,9 +11,8 @@ app.config['CACHE_TYPE'] = 'SimpleCache'
 app.config['CACHE_DEFAULT_TIMEOUT'] = 300
 cache = Cache(app)
 
-@cache.memoize(timeout=300)
-def cached_search(query):
-    return search_academic_sources(query)
+# Initialize Supabase globally
+supabase = get_db_client()
 
 @app.route('/')
 def index():
@@ -34,11 +28,7 @@ def api_get_papers():
     limit = request.args.get('limit', 20, type=int)
     search_query = request.args.get('search', '', type=str)
     
-    # Supabase is imported globally in utils/api_client but let's do it clean
-    from utils.db import get_db_client, get_all_papers
-    sb = get_db_client()
-    
-    result = get_all_papers(sb, page, limit, search_query)
+    result = get_all_papers(supabase, page, limit, search_query)
     return jsonify({
         'success': True,
         'page': page,
@@ -47,79 +37,36 @@ def api_get_papers():
         'data': result['data']
     })
 
-@app.route('/check', methods=['POST'])
-def check_plagiarism():
-    if 'pdfFile' not in request.files:
-        return jsonify({'error': 'No file uploaded'}), 400
-    
-    file = request.files['pdfFile']
-    if file.filename == '':
-        return jsonify({'error': 'No file selected'}), 400
+@app.route('/recommend', methods=['POST'])
+def recommend_papers():
+    data = request.get_json()
+    if not data or 'text' not in data:
+        return jsonify({'error': 'No text provided. Please input your research topic or abstract.'}), 400
         
-    if not file.filename.lower().endswith('.pdf'):
-         return jsonify({'error': 'Invalid file format. Please upload a PDF file.'}), 400
-         
-    exclude_refs = request.form.get('excludeRefs') == 'true'
-    
+    user_text = data['text'].strip()
+    if len(user_text) < 10:
+        return jsonify({'error': 'Text is too short. Please provide more details about your research.'}), 400
+        
     try:
-        # 1. Extract text from PDF
-        file_bytes = file.read()
-        raw_text = extract_text_from_pdf(file_bytes)
+        # 1. Fetch a pool of candidates from Supabase (e.g., top 1000 latest papers)
+        papers_pool = fetch_pool_for_semantic_search(supabase, limit=1000)
         
-        if not raw_text.strip():
-            return jsonify({'error': 'Could not extract text from PDF. Ensure the PDF is not an image.'}), 400
+        if not papers_pool:
+            return jsonify({'error': 'Database is empty. Please wait for the scraper to gather data.'}), 500
             
-        # 2. Preprocess text (Remove bibliography if requested)
-        text_no_refs = remove_bibliography(raw_text, exclude_refs)
-        cleaned_text = clean_text(text_no_refs)
+        # 2. Perform Semantic Search using TF-IDF & Cosine Similarity
+        # This will rank the papers pool based on relevance to the user's text
+        top_matches = semantic_search(user_text, papers_pool, top_k=10)
         
-        # 3. Tokenization & Chunking
-        sentences = sentence_tokenize(cleaned_text)
-        chunks = create_chunks(sentences, chunk_size=3) # Size 3 sentences
-        
-        if not chunks:
-            return jsonify({'error': 'Not enough text content to analyze.'}), 400
-            
-        # Limit chunks to avoid too many API calls for MVP
-        MAX_CHUNKS = 50
-        if len(chunks) > MAX_CHUNKS:
-            chunks = chunks[:MAX_CHUNKS]
-            
-        # 4 & 5. API Search & Similarity Match per chunk
-        chunk_results = []
-        high_similarity_chunks_count = 0
-        
-        for chunk in chunks:
-            if len(chunk.strip()) < 10:
-                continue # Skip very short chunks
-                
-            sources = cached_search(chunk)
-            score, best_source = find_best_match(chunk, sources)
-            
-            res = {
-                'chunk': chunk,
-                'score': float(score),
-                'source': best_source
-            }
-            chunk_results.append(res)
-            
-            if score > 0.5:
-                high_similarity_chunks_count += 1
-                
-        # 6. Aggregate Scores
-        overall_score, matched_sources = aggregate_similarities(chunk_results)
-        
-        # Format response
         return jsonify({
-            'similarity_percentage': overall_score,
-            'matched_sources': matched_sources,
-            'processed_chunks': len(chunk_results),
-            'high_similarity_chunks': high_similarity_chunks_count,
-            'excluded_bibliography': exclude_refs
+            'success': True,
+            'query_length': len(user_text),
+            'pool_size': len(papers_pool),
+            'results': top_matches
         })
         
     except Exception as e:
-        print(f"Error processing: {e}")
+        print(f"Error processing recommendation: {e}")
         return jsonify({'error': f'An error occurred during processing: {str(e)}'}), 500
 
 if __name__ == '__main__':

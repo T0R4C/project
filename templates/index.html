@@ -3,29 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Plagiarism Checker untuk Mahasiswa</title>
-    <!-- Google Fonts for typography -->
+    <title>Academic Paper Recommender</title>
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Custom CSS -->
     <link href="/static/css/style.css" rel="stylesheet">
+    <!-- Lottie Player -->
+    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
 </head>
 <body class="bg-light">
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary premium-nav shadow-sm">
         <div class="container">
             <a class="navbar-brand fw-bold d-flex align-items-center" href="/">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-shield-check me-2" viewBox="0 0 16 16">
-                  <path d="M5.338 1.59a61.44 61.44 0 0 0-2.837.856.481.481 0 0 0-.328.39c-.554 4.157.726 7.19 2.253 9.188a10.725 10.725 0 0 0 2.287 2.233c.346.244.652.42.893.533.12.057.218.095.293.118a.55.55 0 0 0 .101.025.615.615 0 0 0 .1-.025c.076-.023.174-.061.294-.118.24-.113.547-.29.893-.533a10.726 10.726 0 0 0 2.287-2.233c1.527-1.997 2.807-5.031 2.253-9.188a.48.48 0 0 0-.328-.39c-.651-.213-1.75-.56-2.837-.855C9.552 1.29 8.531 1.067 8 1.067c-.53 0-1.552.223-2.662.524zM5.072.56C6.157.265 7.31 0 8 0s1.843.265 2.928.56c1.11.3 2.229.655 2.887.87a1.54 1.54 0 0 1 1.044 1.262c.596 4.477-.787 7.795-2.465 9.99a11.775 11.775 0 0 1-2.517 2.453 7.159 7.159 0 0 1-1.048.625c-.28.132-.581.24-.829.24s-.548-.108-.829-.24a7.158 7.158 0 0 1-1.048-.625 11.777 11.777 0 0 1-2.517-2.453C1.928 10.487.545 7.169 1.141 2.692A1.54 1.54 0 0 1 2.185 1.43 62.456 62.456 0 0 1 5.072.56z"/>
-                  <path d="M10.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0z"/>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-journal-richtext me-2" viewBox="0 0 16 16">
+                  <path d="M7.5 3.75a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0zm-.861 1.542 1.33.886 1.854-1.855a.25.25 0 0 1 .289-.047l1.888.974V8.5a.5.5 0 0 1-.5.5H5a.5.5 0 0 1-.5-.5V8s1.54-1.274 1.615-1.338a.5.5 0 0 1 .524-.07z"/>
+                  <path d="M3 0h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-1h1v1a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v1H1V2a2 2 0 0 1 2-2z"/>
+                  <path d="M3 5.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5z"/>
                 </svg>
-                Plagiarism Checker
+                Academic Recommender
             </a>
             <div class="collapse navbar-collapse justify-content-end">
                 <ul class="navbar-nav">
                     <li class="nav-item">
-                        <a class="nav-link active fw-bold" href="/">Cek Dokumen</a>
+                        <a class="nav-link active fw-bold" href="/">Pencarian Semantik</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="/database">Database Explorer</a>
@@ -38,98 +41,61 @@
     <!-- Main Content -->
     <div class="container my-5">
         <div class="row justify-content-center">
-            <div class="col-lg-8 col-md-10">
-                <!-- Form Card -->
-                <div class="card upload-card border-0 shadow-lg mb-5 rounded-4 overflow-hidden">
-                    <div class="card-header bg-white border-0 pt-4 pb-0 px-4">
-                        <h4 class="mb-1 fw-bold text-dark">Periksa Orisinalitas Dokumen</h4>
-                        <p class="text-muted small">Unggah dokumen PDF tugas Anda untuk mendeteksi kesamaan dengan sumber akademik.</p>
-                    </div>
-                    <div class="card-body p-4">
-                        <form id="uploadForm" enctype="multipart/form-data">
-                            
-                            <!-- File Upload Area -->
-                            <div class="file-drop-area mb-4 p-5 text-center rounded-3 border border-2 border-dashed position-relative" id="dropArea">
-                                <input class="file-input position-absolute w-100 h-100 top-0 start-0 opacity-0" style="cursor:pointer;" type="file" id="pdfFile" name="pdfFile" accept=".pdf" required>
-                                
-                                <div class="icon-container mb-3 text-primary">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="bi bi-cloud-arrow-up" viewBox="0 0 16 16">
-                                      <path fill-rule="evenodd" d="M7.646 5.146a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 6.707V10.5a.5.5 0 0 1-1 0V6.707L6.354 7.854a.5.5 0 1 1-.708-.708l2-2z"/>
-                                      <path d="M4.406 3.342A5.53 5.53 0 0 1 8 2c2.69 0 4.923 2 5.166 4.579C14.758 6.804 16 8.137 16 9.773 16 11.569 14.502 13 12.687 13H3.781C1.708 13 0 11.366 0 9.318c0-1.763 1.266-3.223 2.942-3.593.143-.863.698-1.723 1.464-2.383zm.653.757c-.757.653-1.153 1.44-1.153 2.056v.448l-.445.049C2.064 6.805 1 7.952 1 9.318 1 10.785 2.23 12 3.781 12h8.906C13.98 12 15 10.988 15 9.773c0-1.216-1.02-2.228-2.313-2.228h-.5v-.5C12.188 4.825 10.328 3 8 3a4.53 4.53 0 0 0-2.941 1.1z"/>
-                                    </svg>
-                                </div>
-                                <h5 class="fw-semibold text-dark mb-1">Pilih File PDF atau Tarik Kesini</h5>
-                                <p class="text-muted small mb-0" id="fileNameDisplay">Maksimal ukuran file: 10MB</p>
-                            </div>
+            <div class="col-lg-8 text-center mb-5">
+                <h1 class="fw-bold text-dark display-5 mb-3">Temukan Referensi Penelitianmu</h1>
+                <p class="text-muted lead">Ketikkan kata kunci, topik, atau *paste* abstrak ide penelitian Anda di bawah ini. AI kami akan mencarikan artikel yang paling relevan secara semantik dari database kami.</p>
+            </div>
+        </div>
 
-                            <!-- Options -->
-                            <div class="form-check form-switch mb-4">
-                                <input class="form-check-input shadow-sm" type="checkbox" id="excludeRefs" checked>
-                                <label class="form-check-label fw-medium ms-2" for="excludeRefs">
-                                    Abaikan Daftar Pustaka / Referensi
-                                </label>
-                                <div class="form-text mt-1">Sistem akan secara otomatis mendeteksi dan mengabaikan bagian daftar pustaka agar tidak dianggap sebagai plagiarisme.</div>
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <!-- Search Card -->
+                <div class="card border-0 shadow-lg rounded-4 overflow-hidden mb-5">
+                    <div class="card-body p-4 p-md-5">
+                        <form id="searchForm">
+                            <div class="mb-4">
+                                <label for="queryText" class="form-label fw-bold text-dark">Ide Penelitian / Kata Kunci</label>
+                                <textarea class="form-control bg-light border-0 p-3 shadow-sm" id="queryText" rows="4" placeholder="Contoh: Pengaruh implementasi machine learning terhadap efisiensi energi pada smart city..." required></textarea>
                             </div>
                             
-                            <!-- Submit Button -->
-                            <div class="d-grid">
-                                <button type="submit" class="btn btn-primary btn-lg fw-bold shadow-sm rounded-pill py-3 d-flex justify-content-center align-items-center" id="submitBtn">
-                                    <span>Mulai Analisis Dokumen</span>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-arrow-right-short ms-2" viewBox="0 0 16 16">
-                                      <path fill-rule="evenodd" d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"/>
+                            <button type="submit" class="btn btn-primary btn-lg w-100 rounded-pill fw-bold shadow" id="submitBtn">
+                                <span class="d-flex align-items-center justify-content-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-magic me-2" viewBox="0 0 16 16">
+                                      <path d="M9.5 2.672a.5.5 0 1 0 1 0V.843a.5.5 0 0 0-1 0v1.829Zm4.5.535A.5.5 0 0 0 13.293 2L12 3.293a.5.5 0 1 0 .707.707L14 2.707ZM7.293 4A.5.5 0 1 0 8 3.293L6.707 2A.5.5 0 0 0 6 2.707L7.293 4Zm-.538 4.5A.5.5 0 0 0 6 9.5v1.828a.5.5 0 0 0 1 0V9.5a.5.5 0 0 0-.5-.5Zm1.828 4.5a.5.5 0 0 0 1 0V14.5a.5.5 0 0 0-1 0v-1.828a.5.5 0 0 0-.5.5ZM13.293 14A.5.5 0 1 0 14 13.293L12.707 12a.5.5 0 0 0-.707.707L13.293 14ZM2.707 14A.5.5 0 0 0 2 13.293l1.293-1.293a.5.5 0 1 0 .707.707L2.707 14ZM2 2.707A.5.5 0 1 0 2.707 2L1.414 3.293A.5.5 0 0 0 2 3.707L2 2.707ZM14.5 9.5a.5.5 0 0 0 0-1h-1.828a.5.5 0 0 0 0 1H14.5ZM2.5 9.5a.5.5 0 0 0 0-1H.672a.5.5 0 0 0 0 1H2.5Z"/>
+                                      <path d="M5.933.87a2.89 2.89 0 0 1 4.134 0l.622.638.89-.011a2.89 2.89 0 0 1 2.924 2.583l.01.89.638.622a2.89 2.89 0 0 1 0 4.134l-.638.622-.01.89a2.89 2.89 0 0 1-2.924 2.583l-.89-.01-.622.638a2.89 2.89 0 0 1-4.134 0l-.622-.638-.89.011a2.89 2.89 0 0 1-2.924-2.583l-.01-.89-.638-.622a2.89 2.89 0 0 1 0-4.134l.638-.622.01-.89A2.89 2.89 0 0 1 5.31 3.5l.89.01.622-.638ZM11.133 2.14a1.89 1.89 0 0 0-2.704 0l-.92.944-1.32-.016a1.89 1.89 0 0 0-1.911 1.69l-.016 1.32-.944.92a1.89 1.89 0 0 0 0 2.704l.944.92.016 1.32a1.89 1.89 0 0 0 1.911 1.69l1.32-.016.92.944a1.89 1.89 0 0 0 2.704 0l.92-.944 1.32.016a1.89 1.89 0 0 0 1.911-1.69l.016-1.32.944-.92a1.89 1.89 0 0 0 0-2.704l-.944-.92-.016-1.32a1.89 1.89 0 0 0-1.911-1.69l-1.32.016-.92-.944Z"/>
+                                      <path d="M9.57 6.035a1.5 1.5 0 1 1-2.122-2.122 1.5 1.5 0 0 1 2.122 2.122Z"/>
                                     </svg>
-                                </button>
-                            </div>
+                                    Cari Artikel Relevan
+                                </span>
+                            </button>
                         </form>
                     </div>
                 </div>
 
-                <!-- Loading Spinner -->
-                <div id="loadingIndicator" class="text-center d-none my-5">
-                    <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                    <h5 class="fw-bold text-dark">Menganalisis Dokumen...</h5>
-                    <p class="text-muted">Sedang mencari kecocokan dengan jutaan sumber akademik dari Semantic Scholar.</p>
+                <!-- Loading State -->
+                <div id="loadingState" class="text-center d-none my-5">
+                    <lottie-player src="https://lottie.host/a98075bc-dd9e-4340-970d-f5e9c05e1eb2/5h75xT3b0b.json" background="transparent" speed="1" style="width: 250px; height: 250px; margin: 0 auto;" loop autoplay></lottie-player>
+                    <h5 class="fw-bold text-primary mt-3">AI Sedang Mencari Kecocokan...</h5>
+                    <p class="text-muted">Menganalisis semantik kueri Anda dengan ribuan abstrak di database.</p>
+                </div>
+
+                <!-- Error Alert -->
+                <div id="errorAlert" class="alert alert-danger d-none d-flex align-items-center rounded-3 shadow-sm" role="alert">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-exclamation-triangle-fill flex-shrink-0 me-3" viewBox="0 0 16 16">
+                        <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+                    </svg>
+                    <div id="errorMessage">An error occurred.</div>
                 </div>
 
                 <!-- Results Section -->
-                <div id="resultsArea" class="d-none animate-fade-in">
-                    <!-- Error Message -->
-                    <div id="errorMessage" class="alert alert-danger shadow-sm border-0 rounded-3 d-none mb-4" role="alert">
+                <div id="resultsSection" class="d-none">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="fw-bold text-dark mb-0">Rekomendasi Teratas</h4>
+                        <span class="badge bg-success rounded-pill px-3 py-2" id="resultsCount">0 Ditemukan</span>
                     </div>
-
-                    <!-- Report Content -->
-                    <div id="reportContent" class="d-none">
-                        
-                        <!-- Score Card -->
-                        <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden bg-white">
-                            <div class="card-body p-4 p-md-5 text-center">
-                                <h5 class="fw-bold text-muted text-uppercase mb-3 tracking-wide">Tingkat Kemiripan Keseluruhan</h5>
-                                <div class="display-1 fw-bold mb-3" id="similarityScore" style="color: var(--bs-primary);">0%</div>
-                                <div class="progress" style="height: 10px;">
-                                  <div id="scoreProgressBar" class="progress-bar bg-primary" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
-                                </div>
-                                <p class="mt-4 mb-0 text-muted" id="scoreMessage">Dokumen tampaknya orisinal.</p>
-                                <div class="row text-center mt-4 pt-4 border-top">
-                                    <div class="col-6">
-                                        <h3 class="fw-bold text-dark mb-0" id="chunksProcessed">0</h3>
-                                        <p class="text-muted small text-uppercase tracking-wide mb-0">Bagian Diperiksa</p>
-                                    </div>
-                                    <div class="col-6 border-start">
-                                        <h3 class="fw-bold text-danger mb-0" id="highSimilarityChunks">0</h3>
-                                        <p class="text-muted small text-uppercase tracking-wide mb-0">Potensi Plagiarisme</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Sources List -->
-                        <h5 class="fw-bold text-dark mb-3">Sumber yang Ditemukan</h5>
-                        <div id="sourcesList" class="d-flex flex-column gap-3 mb-5">
-                            <!-- Sources will be injected here via JS -->
-                        </div>
-
+                    
+                    <div id="recommendationsList" class="d-flex flex-column gap-3">
+                        <!-- Cards injected by JS -->
                     </div>
                 </div>
 
