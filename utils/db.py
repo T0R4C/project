@@ -59,3 +59,40 @@ def search_paper_in_db(supabase, query_text):
     except Exception as e:
         print(f"Error searching Supabase: {e}")
         return []
+
+def get_all_papers(supabase, page=1, limit=20, search_query=""):
+    """
+    Fetch papers with pagination and optional search.
+    """
+    if not supabase:
+        return {"data": [], "total": 0}
+        
+    try:
+        offset = (page - 1) * limit
+        
+        query = supabase.table('papers').select('*', count='exact')
+        
+        if search_query:
+            query = query.ilike('title', f'%{search_query}%')
+            
+        # Order by year descending, then title
+        response = query.order('year', desc=True).range(offset, offset + limit - 1).execute()
+        
+        results = []
+        for row in response.data:
+            results.append({
+                'paperId': row.get('paper_id'),
+                'title': row.get('title'),
+                'abstract': row.get('abstract'),
+                'venue': row.get('venue'),
+                'year': row.get('year'),
+                'authors': row.get('authors')
+            })
+            
+        return {
+            "data": results,
+            "total": response.count if response.count is not None else 0
+        }
+    except Exception as e:
+        print(f"Error fetching papers: {e}")
+        return {"data": [], "total": 0}

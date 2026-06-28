@@ -24,6 +24,29 @@ def cached_search(query):
 def index():
     return render_template('index.html')
 
+@app.route('/database')
+def database_explorer():
+    return render_template('database.html')
+
+@app.route('/api/papers')
+def api_get_papers():
+    page = request.args.get('page', 1, type=int)
+    limit = request.args.get('limit', 20, type=int)
+    search_query = request.args.get('search', '', type=str)
+    
+    # Supabase is imported globally in utils/api_client but let's do it clean
+    from utils.db import get_db_client, get_all_papers
+    sb = get_db_client()
+    
+    result = get_all_papers(sb, page, limit, search_query)
+    return jsonify({
+        'success': True,
+        'page': page,
+        'limit': limit,
+        'total': result['total'],
+        'data': result['data']
+    })
+
 @app.route('/check', methods=['POST'])
 def check_plagiarism():
     if 'pdfFile' not in request.files:
