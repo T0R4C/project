@@ -36,8 +36,8 @@ def search_paper_in_db(supabase, query_text):
         search_query = " | ".join(words[:5]) # Take top 5 words to form a tsquery
         
         # Searching against 'abstract' or 'title'
-        # Note: Supabase Postgres requires a full-text search index for optimal performance
-        response = supabase.table('papers').select('*').text_search('abstract', search_query).limit(3).execute()
+        # Supabase Python client requires limit() before some filters depending on version
+        response = supabase.table('papers').select('*').limit(3).text_search('abstract', search_query).execute()
         
         # Format to match our app's internal structure
         results = []
