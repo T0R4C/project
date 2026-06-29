@@ -28,7 +28,7 @@ KEYWORDS = [
     "natural language processing", "computer vision", "internet of things",
     "blockchain", "cloud computing", "cyber security", "data mining",
     "software engineering", "jaringan komputer", "sistem informasi",
-    "database", "big data analytics", "edge computing", "quantum computing",
+    "database", "big data analytics", "edge computing", "quantum computing", "simple additive weighting", "sistem pendukung keputusan", "rancang bangun sistem",
     # Health & Science
     "kesehatan masyarakat", "epidemiologi penyakit", "farmasi klinik",
     "bioinformatics", "medical imaging", "telemedicine", "genomics",
